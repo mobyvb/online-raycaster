@@ -8,6 +8,8 @@ var express = require('express')
   , path = require('path');
 
 var app = express();
+var http = http.Server(app);
+var io = require('socket.io')(http);
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -27,11 +29,19 @@ if ('development' == app.get('env')) {
 }
 
 var wallGrid;
+var players = [];
 app.get('/', function(req, res) {
   res.render('index', {grid:wallGrid});
 });
 
-http.createServer(app).listen(app.get('port'), function(){
+io.on('connection', function(socket) {
+  console.log('a user connected');
+  socket.on('moved', function(x, y) {
+    socket.broadcast.emit('movement', socket.id, x, y);
+  });
+});
+
+http.listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
   createNewGame();
 });

@@ -58,6 +58,7 @@ Player.prototype.walk = function(distance, map) {
   if (map.get(this.x + dx, this.y) <= 0) this.x += dx;
   if (map.get(this.x, this.y + dy) <= 0) this.y += dy;
   this.paces += distance;
+  socket.emit('moved', this.x, this.y);
 };
 
 Player.prototype.update = function(controls, map, seconds) {
@@ -126,7 +127,6 @@ Map.prototype.cast = function(point, angle, range) {
 
 Map.prototype.update = function(seconds) {
   if (this.light > 0) this.light = Math.max(this.light - 10 * seconds, 0);
-  else if (Math.random() * 5 < seconds) this.light = 2;
 };
 
 function Camera(canvas, resolution, fov) {
@@ -137,7 +137,7 @@ function Camera(canvas, resolution, fov) {
   this.spacing = this.width / resolution;
   this.fov = fov;
   this.range = MOBILE ? 8 : 14;
-  this.lightRange = 5;
+  this.lightRange = 7;
   this.scale = (this.width + this.height) / 1200;
 }
 
@@ -193,8 +193,6 @@ Camera.prototype.drawColumn = function(column, ray, angle, map) {
 
   for (var s = ray.length - 1; s >= 0; s--) {
     var step = ray[s];
-    var rainDrops = Math.pow(Math.random(), 3) * s;
-    var rain = (rainDrops > 0) && this.project(0.1, angle, step.distance);
 
     if (s === hit) {
       var textureX = Math.floor(texture.width * step.offset);
@@ -207,10 +205,6 @@ Camera.prototype.drawColumn = function(column, ray, angle, map) {
       ctx.globalAlpha = Math.max((step.distance + step.shading) / this.lightRange - map.light, 0);
       ctx.fillRect(left, wall.top, width, wall.height);
     }
-
-    ctx.fillStyle = '#ffffff';
-    ctx.globalAlpha = 0.15;
-    while (--rainDrops > 0) ctx.fillRect(left, Math.random() * rain.top, 1, rain.height);
   }
 };
 
@@ -253,4 +247,8 @@ loop.start(function frame(seconds) {
   map.update(seconds);
   player.update(controls.states, map, seconds);
   camera.render(player, map);
+});
+
+socket.on('movement', function(id, x, y) {
+  console.log(x, y);
 });

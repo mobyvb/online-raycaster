@@ -5,6 +5,9 @@ html
     title Raycaster Demo - Online
     script.
       var wallGrid = !{JSON.stringify(grid)}
+    script(src='/socket.io/socket.io.js')
+    script.
+      var socket = io();
   body(style='background:#000; margin:0; padding:0')
     canvas#display(width='1' height='1' style='width:100%; height:100%;')
     script(src='/js/game.js')
