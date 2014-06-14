@@ -26,10 +26,19 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
+var wallGrid;
 app.get('/', function(req, res) {
-  res.render('index');
+  res.render('index', {grid:wallGrid});
 });
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
+  createNewGame();
 });
+
+function createNewGame() {
+  wallGrid = new Uint8Array(32 * 32);
+  for (var i = 0; i < 32*32; i++) {
+    wallGrid[i] = Math.random() < 0.3 ? 1 : 0;
+  }
+}
